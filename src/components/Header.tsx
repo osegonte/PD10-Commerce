@@ -9,11 +9,6 @@ import { useCartStore } from "@/lib/cartStore";
 import type { User } from "@supabase/supabase-js";
 
 interface HeaderProps {
-  /**
-   * Force the header to render in its dark/scrolled style.
-   * Use this on pages with a white background (product pages, cart, shop pages)
-   * so the text/icons are visible even when the page hasn't been scrolled.
-   */
   alwaysDark?: boolean;
 }
 
@@ -22,8 +17,6 @@ export default function Header({ alwaysDark = false }: HeaderProps) {
   const [scrolled, setScrolled] = useState(false);
   const [menuOpen, setMenuOpen] = useState(false);
   const [user, setUser] = useState<User | null>(null);
-
-  // Cart count — only read after mount to avoid SSR/localStorage hydration mismatch
   const [mounted, setMounted] = useState(false);
   const totalItems = useCartStore((s) => s.totalItems());
   useEffect(() => setMounted(true), []);
@@ -44,7 +37,6 @@ export default function Header({ alwaysDark = false }: HeaderProps) {
     return () => window.removeEventListener("scroll", handleScroll);
   }, []);
 
-  // Dark mode = scrolled state OR forced dark via prop
   const isDark = alwaysDark || scrolled;
 
   const handleAccountClick = async () => {
@@ -57,12 +49,10 @@ export default function Header({ alwaysDark = false }: HeaderProps) {
   };
 
   const navItems = [
-    { label: "New Arrivals", href: "/new-arrivals" },
-    { label: "Hoodies",      href: "/hoodies"      },
-    { label: "Tees",         href: "/tees"         },
-    { label: "Headwear",     href: "/headwear"      },
-    { label: "Accessories",  href: "/accessories"  },
-    { label: "Lookbook",     href: "/lookbook"      },
+    { label: "Phones",             href: "/phones"             },
+    { label: "Laptops",            href: "/laptops"            },
+    { label: "Student Essentials", href: "/student-essentials" },
+    { label: "Ghetto Essentials",  href: "/ghetto-essentials"  },
   ];
 
   const iconColor = isDark ? "text-black" : "text-white";
@@ -94,18 +84,18 @@ export default function Header({ alwaysDark = false }: HeaderProps) {
             </span>
           </button>
 
-          {/* ── Center: Logo ── */}
+          {/* ── Center: Logo (replace SVG content with real logo later) ── */}
           <div className="absolute left-1/2 -translate-x-1/2">
             <Link href="/" className="block">
               <svg
-                viewBox="0 0 120 32"
+                viewBox="0 0 160 32"
                 className={`h-5 sm:h-6 w-auto transition-colors duration-500 ${isDark ? "fill-black" : "fill-white"}`}
                 xmlns="http://www.w3.org/2000/svg"
               >
                 <text x="50%" y="50%" dominantBaseline="central" textAnchor="middle"
                   fontFamily="'Helvetica Neue', Helvetica, Arial, sans-serif"
-                  fontSize="24" fontWeight="300" letterSpacing="6">
-                  NYNT
+                  fontSize="22" fontWeight="300" letterSpacing="6">
+                  RATELS
                 </text>
               </svg>
             </Link>
@@ -114,20 +104,17 @@ export default function Header({ alwaysDark = false }: HeaderProps) {
           {/* ── Right: Icons ── */}
           <div className="flex items-center gap-5 sm:gap-6">
 
-            {/* Contact — desktop only */}
             <Link href="/contact"
               className={`text-[11px] tracking-[0.15em] uppercase font-light hidden lg:inline transition-colors duration-500 ${iconColor}`}>
               contact
             </Link>
 
-            {/* Contact icon — mobile */}
             <Link href="/contact" className={`lg:hidden transition-colors duration-500 ${iconColor}`} aria-label="Contact">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-[18px] h-[18px]">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M2.25 6.75c0 8.284 6.716 15 15 15h2.25a2.25 2.25 0 0 0 2.25-2.25v-1.372c0-.516-.351-.966-.852-1.091l-4.423-1.106c-.44-.11-.902.055-1.173.417l-.97 1.293c-.282.376-.769.542-1.21.38a12.035 12.035 0 0 1-7.143-7.143c-.162-.441.004-.928.38-1.21l1.293-.97c.363-.271.527-.734.417-1.173L6.963 3.102a1.125 1.125 0 0 0-1.091-.852H4.5A2.25 2.25 0 0 0 2.25 4.5v2.25Z" />
               </svg>
             </Link>
 
-            {/* Account */}
             <button
               onClick={handleAccountClick}
               className={`transition-colors duration-500 relative group ${iconColor}`}
@@ -147,7 +134,6 @@ export default function Header({ alwaysDark = false }: HeaderProps) {
               </span>
             </button>
 
-            {/* Cart — with item count badge */}
             <Link href="/cart" className={`transition-colors duration-500 relative ${iconColor}`} aria-label="Cart">
               <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-[18px] h-[18px] sm:w-5 sm:h-5">
                 <path strokeLinecap="round" strokeLinejoin="round" d="M15.75 10.5V6a3.75 3.75 0 1 0-7.5 0v4.5m11.356-1.993 1.263 12c.07.665-.45 1.243-1.119 1.243H4.25a1.125 1.125 0 0 1-1.12-1.243l1.264-12A1.125 1.125 0 0 1 5.513 7.5h12.974c.576 0 1.059.435 1.119 1.007ZM8.625 10.5a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Zm7.5 0a.375.375 0 1 1-.75 0 .375.375 0 0 1 .75 0Z" />

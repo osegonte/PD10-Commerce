@@ -1,9 +1,10 @@
 import type { Metadata } from "next";
 import "./globals.css";
+import ScamBanner from "@/components/layout/ScamBanner";
 
 export const metadata: Metadata = {
-  title: "NYNT",
-  description: "NYNT — Streetwear",
+  title: "RATELS Store",
+  description: "RATELS Store — Verified Devices. No Scams. Direct Deals.",
 };
 
 export default function RootLayout({
@@ -21,7 +22,10 @@ export default function RootLayout({
           rel="stylesheet"
         />
       </head>
-      <body>{children}</body>
+      <body>
+        <ScamBanner />
+        {children}
+      </body>
     </html>
   );
 }

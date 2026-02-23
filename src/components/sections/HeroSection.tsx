@@ -2,10 +2,7 @@
 
 import { useEffect, useState } from "react";
 import Image from "next/image";
-import HeroBlock from "@/components/HeroBlock";
-
-const IMG1_RATIO = 1571 / 2506;
-const IMG2_RATIO = 2038 / 2506;
+import Link from "next/link";
 
 export default function HeroSection() {
   const [loaded, setLoaded] = useState(false);
@@ -21,109 +18,78 @@ export default function HeroSection() {
       style={{
         height: "min(100svh, 960px)",
         minHeight: "560px",
-        background: "#ffffff",
       }}
     >
-      <div className="flex h-full w-full items-stretch" style={{ gap: "1px" }}>
+      <Image
+        src="/hero/hero.jpg"
+        alt="RATELS STORE"
+        fill
+        priority
+        unoptimized
+        style={{
+          objectFit: "cover",
+          objectPosition: "75% 60%",
+        }}
+        sizes="100vw"
+      />
 
-        {/* Image 1 */}
-        <div
-          className="relative shrink-0"
+      <div className="absolute inset-0 bg-gradient-to-b from-black/50 via-black/10 to-black/60 pointer-events-none z-10" />
+
+      <div
+        className="absolute inset-0 z-20 flex flex-col items-center justify-center px-6 text-center"
+        style={{
+          opacity: loaded ? 1 : 0,
+          transform: loaded ? "none" : "translateY(20px)",
+          transition: "opacity 1s ease 200ms, transform 1.1s cubic-bezier(0.16,1,0.3,1) 200ms",
+        }}
+      >
+        <p className="text-white/50 text-[10px] tracking-[0.45em] uppercase mb-6">
+          Official Store
+        </p>
+
+        <h1
+          className="text-white font-light leading-[1.1] mb-4"
           style={{
-            aspectRatio: `${IMG1_RATIO}`,
-            height: "100%",
-            opacity: loaded ? 1 : 0,
-            transform: loaded ? "none" : "translateX(-40px)",
-            transition: "opacity 1s ease 0ms, transform 1.1s cubic-bezier(0.16,1,0.3,1) 0ms",
+            fontFamily: "'Helvetica Neue', Helvetica, Arial, sans-serif",
+            fontSize: "clamp(36px, 7vw, 88px)",
+            letterSpacing: "-0.02em",
           }}
         >
-          <HeroBlock
-            src="/hero/hero-01.jpg"
-            label="01"
-            loaded={true}
-            initialTransform="none"
-            delay={0}
-            objectFit="cover"
-            objectPosition="center"
-          />
-        </div>
+          RATELS STORE
+        </h1>
 
-        {/* Image 2 */}
-        <div
-          className="relative shrink-0"
-          style={{
-            aspectRatio: `${IMG2_RATIO}`,
-            height: "100%",
-            opacity: loaded ? 1 : 0,
-            transform: loaded ? "none" : "translateX(40px)",
-            transition: "opacity 1s ease 100ms, transform 1.1s cubic-bezier(0.16,1,0.3,1) 100ms",
-          }}
-        >
-          <HeroBlock
-            src="/hero/hero-02.jpg"
-            label="02"
-            loaded={true}
-            initialTransform="none"
-            delay={0}
-            objectFit="cover"
-            objectPosition="center"
-          />
-        </div>
+        <p className="text-white/70 text-[14px] sm:text-[16px] font-light leading-relaxed mb-10 max-w-[480px]">
+          Verified Devices. No Scams. Direct Deals.
+        </p>
 
-        {/* Glass strip — hero-03 blurred behind frosted panel */}
-        <div
-          className="relative overflow-hidden"
-          style={{
-            flex: "1",
-            minWidth: "60px",
-            opacity: loaded ? 1 : 0,
-            transition: "opacity 1.2s ease 300ms",
-          }}
-        >
-          {/* hero-03 as background — scaled up slightly so blur edges don't show */}
-          <Image
-            src="/hero/hero-03.jpg"
-            alt=""
-            fill
-            unoptimized
-            style={{
-              objectFit: "cover",
-              objectPosition: "center",
-              transform: "scale(1.1)",
-              filter: "blur(24px) saturate(120%) brightness(1.05)",
-            }}
-            sizes="20vw"
-          />
-          {/* Frosted white overlay on top of the blur */}
-          <div
-            className="absolute inset-0"
-            style={{
-              background: "rgba(255,255,255,0.35)",
-            }}
-          />
-          {/* Left edge fade to blend with image 2 */}
-          <div
-            className="absolute inset-y-0 left-0 w-6 pointer-events-none"
-            style={{
-              background: "linear-gradient(to right, rgba(0,0,0,0.06), transparent)",
-            }}
-          />
+        <div className="flex flex-col sm:flex-row items-center gap-3">
+          <Link
+            href="/phones"
+            className="bg-white text-[#0a0a0a] px-8 py-4 text-[12px] tracking-[0.2em] uppercase font-medium hover:bg-white/90 transition-colors duration-300 min-w-[180px] text-center"
+          >
+            Shop Phones
+          </Link>
+          <Link
+            href="/ghetto-essentials"
+            className="border border-white/40 text-white px-8 py-4 text-[12px] tracking-[0.2em] uppercase font-light hover:border-white hover:bg-white/10 transition-all duration-300 min-w-[180px] text-center"
+          >
+            Ghetto Essentials
+          </Link>
         </div>
       </div>
 
-      {/* Header gradient */}
-      <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-transparent pointer-events-none z-10" />
-
-      {/* Tagline */}
       <p
-        className="absolute bottom-8 left-6 z-20 text-white text-[11px] tracking-[0.4em] uppercase font-light pointer-events-none"
-        style={{
-          opacity: loaded ? 1 : 0,
-          transform: loaded ? "none" : "translateY(10px)",
-          transition: "opacity 1s ease 800ms, transform 1s ease 800ms",
-        }}
+        className="absolute bottom-8 left-6 z-20 text-white/40 text-[10px] tracking-[0.4em] uppercase font-light pointer-events-none"
+        style={{ opacity: loaded ? 1 : 0, transition: "opacity 1s ease 1s" }}
       >
-        Stay Above.
+        ratels.store
+      </p>
+
+      <p
+        className="absolute bottom-8 right-6 z-20 text-white/40 text-[10px] tracking-[0.3em] uppercase font-light pointer-events-none"
+        style={{ opacity: loaded ? 1 : 0, transition: "opacity 1s ease 1.1s" }}
+      >
+        ✔ Verified Source
       </p>
     </section>
   );

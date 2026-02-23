@@ -13,11 +13,9 @@ export default function LoginPage() {
   const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  // If already logged in, redirect appropriately
   useEffect(() => {
     supabase.auth.getSession().then(async ({ data: { session } }) => {
       if (!session) return;
-      // Check if admin
       const { data } = await supabase
         .from("admins")
         .select("email")
@@ -53,7 +51,7 @@ export default function LoginPage() {
       {/* Top bar */}
       <div className="px-6 h-14 flex items-center justify-between border-b border-neutral-100">
         <Link href="/" className="text-[13px] tracking-[0.2em] uppercase text-[#1a1a1a] font-medium">
-          NYNT
+          RATELS
         </Link>
         <Link href="/" className="text-[11px] tracking-[0.15em] uppercase text-[#aaa] hover:text-[#1a1a1a] transition-colors">
           ← Back to Shop
@@ -66,13 +64,14 @@ export default function LoginPage() {
 
           {!sent ? (
             <>
-              <h1 className="text-[#1a1a1a] text-[24px] font-light mb-2"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
-                Sign in
+              <h1
+                className="text-[#1a1a1a] text-[24px] font-light mb-2"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
+                Admin Sign In
               </h1>
               <p className="text-[#aaa] text-[13px] mb-10 leading-relaxed">
-                Enter your email — we&apos;ll send you a magic link.
-                No password needed.
+                Enter your email — we&apos;ll send you a secure link to sign in.
               </p>
 
               <form onSubmit={handleSubmit} className="space-y-4">
@@ -95,30 +94,30 @@ export default function LoginPage() {
                   disabled={loading}
                   className="w-full bg-[#1a1a1a] text-white py-4 text-[12px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors disabled:opacity-50"
                 >
-                  {loading ? "Sending..." : "Send Magic Link"}
+                  {loading ? "Sending..." : "Send Sign In Link"}
                 </button>
               </form>
 
               <p className="text-[11px] text-[#ccc] mt-8 leading-relaxed">
-                Admin access is by invitation only.
-                If you&apos;re a customer, you don&apos;t need an account to browse or shop.
+                Admin access only. If you&apos;re a customer, no account needed to browse or shop.
               </p>
             </>
           ) : (
-            /* Sent state */
             <div className="text-center">
               <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
                 <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-5 h-5 text-[#1a1a1a]">
                   <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
                 </svg>
               </div>
-              <h2 className="text-[#1a1a1a] text-[20px] font-light mb-3"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}>
+              <h2
+                className="text-[#1a1a1a] text-[20px] font-light mb-3"
+                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+              >
                 Check your inbox
               </h2>
               <p className="text-[#6b6560] text-[14px] leading-relaxed mb-8">
-                We sent a magic link to <strong>{email}</strong>.
-                Tap it to sign in — it expires in 1 hour.
+                We sent a sign in link to <strong>{email}</strong>.
+                Tap it to access the admin panel — it expires in 1 hour.
               </p>
               <button
                 onClick={() => { setSent(false); setEmail(""); }}

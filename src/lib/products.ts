@@ -1,6 +1,6 @@
+// FILE: src/lib/products.ts
 import { createClient } from "@supabase/supabase-js";
 
-// Server-side client (safe to use in async server components)
 function getSupabase() {
   return createClient(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -14,10 +14,16 @@ export interface DBProduct {
   description: string | null;
   price: number;
   category: string;
+  condition: string | null;
+  storage: string | null;
+  ram: string | null;
+  color: string | null;
+  warranty: string | null;
+  in_box: string | null;
   images: string[];
-  sizes: string[];
   slug: string;
   in_stock: boolean;
+  stock: number;
   created_at: string;
 }
 

@@ -24,28 +24,36 @@ export default function NewArrivalsSection({ products }: Props) {
     return () => observer.disconnect();
   }, []);
 
-  if (products.length === 0) return null;
+  if (products.length === 0) return (
+    <section className="w-full bg-white py-16 sm:py-20 lg:py-28">
+      <div className="px-6 sm:px-10 lg:px-16 xl:px-20">
+        <div className="flex items-end justify-between mb-10 sm:mb-12">
+          <div>
+            <p className="text-[#aaa] text-[10px] tracking-[0.35em] uppercase mb-2">
+              Just dropped
+            </p>
+            <h2
+              className="text-[#1a1a1a] text-[28px] sm:text-[34px] font-light leading-none"
+              style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
+            >
+              Featured Deals
+            </h2>
+          </div>
+        </div>
+        <div className="py-24 text-center border border-neutral-100">
+          <p className="text-[#8a8580] text-[13px] tracking-[0.15em] uppercase">
+            Products coming soon
+          </p>
+        </div>
+      </div>
+    </section>
+  );
 
   const count = products.length;
-
-  /*
-   * Layout logic:
-   * - 5+ products: fill full width edge to edge
-   * - <5 products: each card has a comfortable fixed width, strip is centered
-   *
-   * stepPct = how far each card's left edge is from the previous one (% of container)
-   * cardPct = each card's width (% of container)
-   */
   const FILLS_FULL = count >= 5;
-  // For few products: each card ~60% wide, step ~28% → nice overlap, centered strip
   const stepPct = FILLS_FULL ? Math.round(65 / count) : 28;
-  const cardPct = FILLS_FULL
-    ? 100 - stepPct * (count - 1)
-    : 60;
-  // Total strip width as % — used to center when not filling full width
-  const stripWidthPct = FILLS_FULL
-    ? 100
-    : stepPct * (count - 1) + cardPct;
+  const cardPct = FILLS_FULL ? 100 - stepPct * (count - 1) : 60;
+  const stripWidthPct = FILLS_FULL ? 100 : stepPct * (count - 1) + cardPct;
 
   return (
     <section ref={ref} className="w-full bg-white py-16 sm:py-20 lg:py-28 overflow-hidden">
@@ -67,12 +75,12 @@ export default function NewArrivalsSection({ products }: Props) {
               className="text-[#1a1a1a] text-[28px] sm:text-[34px] font-light leading-none"
               style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
             >
-              New Arrivals
+              Featured Deals
             </h2>
           </div>
 
           <Link
-            href="/new-arrivals"
+            href="/phones"
             className="text-[11px] tracking-[0.18em] uppercase text-[#8a8580] hover:text-[#1a1a1a] transition-colors duration-200 border-b border-current pb-0.5 mb-1"
             style={{ opacity: visible ? 1 : 0, transition: "opacity 0.8s ease 0.2s" }}
           >
@@ -83,18 +91,17 @@ export default function NewArrivalsSection({ products }: Props) {
         {/* ── Card strip ── */}
         <div className="relative">
 
-          {/* Left blur fade */}
+          {/* Left fade */}
           <div
             className="absolute left-0 top-0 bottom-0 w-12 sm:w-20 z-20 pointer-events-none"
             style={{ background: "linear-gradient(to right, white 0%, transparent 100%)" }}
           />
-          {/* Right blur fade */}
+          {/* Right fade */}
           <div
             className="absolute right-0 top-0 bottom-0 w-20 sm:w-36 z-20 pointer-events-none"
             style={{ background: "linear-gradient(to left, white 0%, transparent 100%)" }}
           />
 
-          {/* Cards container — centered when few products, full width when many */}
           <div
             className="relative mx-auto"
             style={{
@@ -105,7 +112,6 @@ export default function NewArrivalsSection({ products }: Props) {
             {products.map((product, i) => {
               const isHovered = hovered === i;
               const leftPct = i * stepPct;
-              // Last card fills remaining width; others use cardPct
               const widthPct = i === count - 1 ? 100 - leftPct : cardPct;
 
               return (
@@ -119,7 +125,6 @@ export default function NewArrivalsSection({ products }: Props) {
                     left: `${leftPct}%`,
                     width: `${widthPct}%`,
                     height: "100%",
-                    // Hovered card comes to front; otherwise stack right-to-left
                     zIndex: isHovered ? 50 : count - i,
                     transform: isHovered
                       ? "translateY(-14px) scale(1.025)"
@@ -160,7 +165,7 @@ export default function NewArrivalsSection({ products }: Props) {
                       }}
                     />
 
-                    {/* Label — slides up on hover */}
+                    {/* Label on hover */}
                     <div
                       className="absolute bottom-0 left-0 right-0 p-4 sm:p-5"
                       style={{
@@ -196,10 +201,10 @@ export default function NewArrivalsSection({ products }: Props) {
           }}
         >
           <Link
-            href="/new-arrivals"
+            href="/phones"
             className="inline-block border border-[#1a1a1a] text-[#1a1a1a] px-10 py-3.5 text-[11px] tracking-[0.2em] uppercase hover:bg-[#1a1a1a] hover:text-white transition-all duration-300"
           >
-            Shop New Arrivals
+            Shop All Deals
           </Link>
         </div>
 
