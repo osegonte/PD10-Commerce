@@ -1,7 +1,6 @@
-// FILE: src/app/login/page.tsx
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { supabase } from "@/lib/supabase";
@@ -9,126 +8,97 @@ import { supabase } from "@/lib/supabase";
 export default function LoginPage() {
   const router = useRouter();
   const [email, setEmail] = useState("");
+  const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
-  const [sent, setSent] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) return;
-      const { data } = await supabase
-        .from("admins")
-        .select("email")
-        .eq("email", session.user.email ?? "")
-        .maybeSingle();
-      router.push(data ? "/admin" : "/");
-    });
-  }, [router]);
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  const handleLogin = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithOtp({
-      email: email.trim().toLowerCase(),
-      options: {
-        emailRedirectTo: `${window.location.origin}/auth/callback`,
-      },
-    });
+    const { error } = await supabase.auth.signInWithPassword({ email, password });
 
     if (error) {
-      setError(error.message);
-    } else {
-      setSent(true);
+      setError("Invalid email or password.");
+      setLoading(false);
+      return;
     }
-    setLoading(false);
+
+    router.push("/admin");
   };
 
   return (
-    <div className="min-h-screen bg-white flex flex-col">
+    <div className="min-h-screen bg-[#f8f8f8] flex flex-col items-center justify-center px-6">
 
-      {/* Top bar */}
-      <div className="px-6 h-14 flex items-center justify-between border-b border-neutral-100">
-        <Link href="/" className="text-[13px] tracking-[0.2em] uppercase text-[#1a1a1a] font-medium">
-          RATELS
-        </Link>
-        <Link href="/" className="text-[11px] tracking-[0.15em] uppercase text-[#aaa] hover:text-[#1a1a1a] transition-colors">
-          ← Back to Shop
-        </Link>
-      </div>
+      {/* Logo */}
+      <Link
+        href="/"
+        className="text-[13px] tracking-[0.3em] uppercase text-[#1a1a1a] font-medium mb-12"
+      >
+        RATELS
+      </Link>
 
-      {/* Form */}
-      <div className="flex-1 flex items-center justify-center px-6 py-16">
-        <div className="w-full max-w-[380px]">
+      {/* Card */}
+      <div className="w-full max-w-sm bg-white border border-neutral-200 p-8">
 
-          {!sent ? (
-            <>
-              <h1
-                className="text-[#1a1a1a] text-[24px] font-light mb-2"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-              >
-                Admin Sign In
-              </h1>
-              <p className="text-[#aaa] text-[13px] mb-10 leading-relaxed">
-                Enter your email — we&apos;ll send you a secure link to sign in.
-              </p>
+        <h1 className="text-[18px] font-light text-[#1a1a1a] mb-1">
+          Admin Sign In
+        </h1>
+        <p className="text-[12px] text-[#aaa] mb-8">
+          Admin access only.
+        </p>
 
-              <form onSubmit={handleSubmit} className="space-y-4">
-                <input
-                  type="email"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  placeholder="your@email.com"
-                  required
-                  autoFocus
-                  className="w-full border border-neutral-200 px-4 py-4 text-[16px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors bg-white"
-                />
+        <form onSubmit={handleLogin} className="flex flex-col gap-4">
+          <div>
+            <label className="block text-[10px] tracking-[0.2em] uppercase text-[#8a8580] mb-2">
+              Email
+            </label>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="w-full border border-neutral-200 px-4 py-4 text-[15px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors bg-white"
+              placeholder="you@email.com"
+              required
+            />
+          </div>
 
-                {error && (
-                  <p className="text-red-500 text-[13px]">{error}</p>
-                )}
+          <div>
+            <label className="block text-[10px] tracking-[0.2em] uppercase text-[#8a8580] mb-2">
+              Password
+            </label>
+            <input
+              type="password"
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="w-full border border-neutral-200 px-4 py-4 text-[15px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors bg-white"
+              placeholder="••••••••"
+              required
+            />
+          </div>
 
-                <button
-                  type="submit"
-                  disabled={loading}
-                  className="w-full bg-[#1a1a1a] text-white py-4 text-[12px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors disabled:opacity-50"
-                >
-                  {loading ? "Sending..." : "Send Sign In Link"}
-                </button>
-              </form>
-
-              <p className="text-[11px] text-[#ccc] mt-8 leading-relaxed">
-                Admin access only. If you&apos;re a customer, no account needed to browse or shop.
-              </p>
-            </>
-          ) : (
-            <div className="text-center">
-              <div className="w-12 h-12 border border-neutral-200 flex items-center justify-center mx-auto mb-6">
-                <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.2} stroke="currentColor" className="w-5 h-5 text-[#1a1a1a]">
-                  <path strokeLinecap="round" strokeLinejoin="round" d="M21.75 6.75v10.5a2.25 2.25 0 0 1-2.25 2.25h-15a2.25 2.25 0 0 1-2.25-2.25V6.75m19.5 0A2.25 2.25 0 0 0 19.5 4.5h-15a2.25 2.25 0 0 0-2.25 2.25m19.5 0v.243a2.25 2.25 0 0 1-1.07 1.916l-7.5 4.615a2.25 2.25 0 0 1-2.36 0L3.32 8.91a2.25 2.25 0 0 1-1.07-1.916V6.75" />
-                </svg>
-              </div>
-              <h2
-                className="text-[#1a1a1a] text-[20px] font-light mb-3"
-                style={{ fontFamily: "'Playfair Display', Georgia, serif" }}
-              >
-                Check your inbox
-              </h2>
-              <p className="text-[#6b6560] text-[14px] leading-relaxed mb-8">
-                We sent a sign in link to <strong>{email}</strong>.
-                Tap it to access the admin panel — it expires in 1 hour.
-              </p>
-              <button
-                onClick={() => { setSent(false); setEmail(""); }}
-                className="text-[11px] tracking-[0.15em] uppercase text-[#aaa] hover:text-[#1a1a1a] transition-colors"
-              >
-                Try a different email
-              </button>
-            </div>
+          {error && (
+            <p className="text-red-500 text-[13px]">{error}</p>
           )}
-        </div>
+
+          <button
+            type="submit"
+            disabled={loading}
+            className="w-full bg-[#1a1a1a] text-white py-4 text-[12px] tracking-[0.2em] uppercase hover:bg-[#333] transition-colors disabled:opacity-50 mt-2"
+          >
+            {loading ? "Signing in..." : "Sign In"}
+          </button>
+        </form>
       </div>
+
+      {/* Back to store */}
+      <Link
+        href="/"
+        className="mt-8 text-[11px] text-[#aaa] hover:text-[#1a1a1a] transition-colors tracking-wide"
+      >
+        ← Back to store
+      </Link>
     </div>
   );
 }
