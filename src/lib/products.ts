@@ -1,4 +1,4 @@
-// Dummy data — swap getProductsByCategory with real Supabase query when admin is ready.
+// Dummy data — swap with real Supabase query when admin is ready.
 
 export interface Product {
   id: string;
@@ -19,6 +19,9 @@ export interface Product {
   created_at: string;
   sizes: string[];
 }
+
+// Alias so existing components that import DBProduct don't break
+export type DBProduct = Product;
 
 const ALL_PRODUCTS: Product[] = [
   {
