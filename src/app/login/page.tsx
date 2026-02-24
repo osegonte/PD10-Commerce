@@ -17,37 +17,48 @@ export default function LoginPage() {
     setLoading(true);
     setError(null);
 
-    const { error } = await supabase.auth.signInWithPassword({ email, password });
+    // 1. Sign in with Supabase Auth
+    const { data, error: signInError } = await supabase.auth.signInWithPassword({
+      email,
+      password,
+    });
 
-    if (error) {
+    if (signInError || !data.user) {
       setError("Invalid email or password.");
       setLoading(false);
       return;
     }
 
+    // 2. Check if this email is an admin
+    const { data: adminRow } = await supabase
+      .from("admins")
+      .select("email")
+      .eq("email", data.user.email ?? "")
+      .maybeSingle();
+
+    if (!adminRow) {
+      // Valid Supabase user but not an admin — sign them out and block
+      await supabase.auth.signOut();
+      setError("This account does not have admin access.");
+      setLoading(false);
+      return;
+    }
+
+    // 3. Admin confirmed — go to dashboard
     router.push("/admin");
   };
 
   return (
     <div className="min-h-screen bg-[#f8f8f8] flex flex-col items-center justify-center px-6">
 
-      {/* Logo */}
-      <Link
-        href="/"
-        className="text-[13px] tracking-[0.3em] uppercase text-[#1a1a1a] font-medium mb-12"
-      >
+      <Link href="/" className="text-[13px] tracking-[0.3em] uppercase text-[#1a1a1a] font-medium mb-12">
         RATELS
       </Link>
 
-      {/* Card */}
       <div className="w-full max-w-sm bg-white border border-neutral-200 p-8">
 
-        <h1 className="text-[18px] font-light text-[#1a1a1a] mb-1">
-          Admin Sign In
-        </h1>
-        <p className="text-[12px] text-[#aaa] mb-8">
-          Admin access only.
-        </p>
+        <h1 className="text-[18px] font-light text-[#1a1a1a] mb-1">Admin Sign In</h1>
+        <p className="text-[12px] text-[#aaa] mb-8">Admin access only.</p>
 
         <form onSubmit={handleLogin} className="flex flex-col gap-4">
           <div>
@@ -78,9 +89,7 @@ export default function LoginPage() {
             />
           </div>
 
-          {error && (
-            <p className="text-red-500 text-[13px]">{error}</p>
-          )}
+          {error && <p className="text-red-500 text-[13px]">{error}</p>}
 
           <button
             type="submit"
@@ -92,13 +101,11 @@ export default function LoginPage() {
         </form>
       </div>
 
-      {/* Back to store */}
-      <Link
-        href="/"
-        className="mt-8 text-[11px] text-[#aaa] hover:text-[#1a1a1a] transition-colors tracking-wide"
-      >
-        ← Back to store
-      </Link>
+      <div className="mt-8 flex flex-col items-center gap-3">
+        <Link href="/" className="text-[11px] text-[#aaa] hover:text-[#1a1a1a] transition-colors tracking-wide">
+          ← Back to store
+        </Link>
+      </div>
     </div>
   );
 }

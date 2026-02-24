@@ -29,7 +29,7 @@ export default function CartPage() {
             <div className="py-24 text-center">
               <p className="text-[#8a8580] text-[15px] mb-8">Your bag is empty.</p>
               <Link
-                href="/new-arrivals"
+                href="/phones"
                 className="inline-block bg-[#1a1a1a] text-white px-10 py-4 text-[13px] tracking-[0.15em] uppercase hover:bg-[#333] transition-colors duration-300"
               >
                 Start Shopping
@@ -143,13 +143,16 @@ export default function CartPage() {
                   <span>₦{totalPrice().toLocaleString()}</span>
                 </div>
 
-                {/* Checkout — wire to Stripe later */}
-                <button className="w-full bg-[#1a1a1a] text-white py-4 text-[13px] tracking-[0.15em] uppercase hover:bg-[#333] transition-colors duration-300">
+                {/* Checkout — Paystack integration pending */}
+                <Link
+                  href="/checkout"
+                  className="block w-full bg-[#1a1a1a] text-white py-4 text-[13px] tracking-[0.15em] uppercase hover:bg-[#333] transition-colors duration-300 text-center"
+                >
                   Checkout
-                </button>
+                </Link>
 
                 <Link
-                  href="/new-arrivals"
+                  href="/phones"
                   className="block text-center text-[11px] text-[#aaa] hover:text-[#1a1a1a] tracking-[0.1em] uppercase mt-4 transition-colors duration-200"
                 >
                   Continue Shopping
