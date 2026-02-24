@@ -8,68 +8,36 @@ import { supabase } from "@/lib/supabase";
 const CATEGORIES = ["phones", "laptops", "student-essentials", "ghetto-essentials"];
 const CONDITIONS = ["New", "UK Used"];
 const IMAGE_SLOTS = [
-  { key: "main",  label: "Main"  },
-  { key: "side",  label: "Side"  },
-  { key: "back",  label: "Back"  },
+  { key: "main", label: "Main" },
+  { key: "side", label: "Side" },
+  { key: "back", label: "Back" },
 ] as const;
 type SlotKey = typeof IMAGE_SLOTS[number]["key"];
 type Tab = "products" | "orders" | "admins";
 
 interface Product {
-  id: string;
-  name: string;
-  description: string;
-  price: number;
-  category: string;
-  condition: string;
-  storage: string;
-  ram: string;
-  color: string;
-  warranty: string;
-  in_box: string;
-  images: string[];
-  stock: number;
-  slug: string;
-  in_stock: boolean;
+  id: string; name: string; description: string; price: number;
+  category: string; condition: string; storage: string; ram: string;
+  color: string; warranty: string; in_box: string;
+  images: string[]; slug: string; in_stock: boolean; stock: number;
 }
-
 interface Order {
-  id: string;
-  created_at: string;
-  status: string;
-  delivery_info: Record<string, string>;
-  total: number;
+  id: string; created_at: string; status: string;
+  delivery_info: Record<string, string>; total: number;
 }
-
-interface Admin {
-  id: string;
-  email: string;
-  created_by: string;
-  created_at: string;
-}
+interface Admin { id: string; email: string; created_by: string; created_at: string; }
 
 const emptyForm = {
-  name: "",
-  description: "",
-  price: "",
-  category: "phones",
-  condition: "New",
-  storage: "",
-  ram: "",
-  color: "",
-  warranty: "",
-  in_box: "",
-  stock: "1",
-  in_stock: true,
+  name: "", description: "", price: "", category: "phones",
+  condition: "New", storage: "", ram: "", color: "",
+  warranty: "", in_box: "", stock: "1", in_stock: true,
 };
-
 type SlotState = { file: File | null; preview: string | null; existingUrl: string | null };
 const emptySlots = (): Record<SlotKey, SlotState> => ({
   main: { file: null, preview: null, existingUrl: null },
   side: { file: null, preview: null, existingUrl: null },
   back: { file: null, preview: null, existingUrl: null },
 });
-
 const ORDER_STATUSES = ["pending", "paid", "shipped", "delivered"];
 
 export default function AdminPage() {
@@ -96,28 +64,12 @@ export default function AdminPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getUser().then(async ({ data: { user }, error }) => {
-      if (error || !user) {
-        router.push("/login");
-        return;
-      }
-
-      const email = user.email ?? "";
+    supabase.auth.getSession().then(async ({ data: { session } }) => {
+      if (!session) { router.push("/login"); return; }
+      const email = session.user.email ?? "";
       setCurrentEmail(email);
-
-      const { data, error: adminError } = await supabase
-        .from("admins")
-        .select("email")
-        .eq("email", email)
-        .maybeSingle();
-
-      console.log("Admin check:", { email, data, adminError });
-
-      if (!data) {
-        router.push("/");
-        return;
-      }
-
+      const { data } = await supabase.from("admins").select("email").eq("email", email).maybeSingle();
+      if (!data) { router.push("/"); return; }
       setAuthorized(true);
       setChecking(false);
       fetchProducts();
@@ -130,12 +82,10 @@ export default function AdminPage() {
     const { data } = await supabase.from("products").select("*").order("created_at", { ascending: false });
     if (data) setProducts(data);
   };
-
   const fetchOrders = async () => {
     const { data } = await supabase.from("orders").select("*").order("created_at", { ascending: false });
     if (data) setOrders(data);
   };
-
   const fetchAdmins = async () => {
     const { data } = await supabase.from("admins").select("*").order("created_at", { ascending: true });
     if (data) setAdmins(data);
@@ -146,14 +96,11 @@ export default function AdminPage() {
     if (!file) return;
     setSlots((prev) => ({ ...prev, [slotKey]: { file, preview: URL.createObjectURL(file), existingUrl: prev[slotKey].existingUrl } }));
   };
-
   const clearSlot = (slotKey: SlotKey) => {
     setSlots((prev) => ({ ...prev, [slotKey]: { file: null, preview: null, existingUrl: null } }));
     if (fileRefs.current[slotKey]) fileRefs.current[slotKey]!.value = "";
   };
-
-  const slugify = (str: string) =>
-    str.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
+  const slugify = (str: string) => str.toLowerCase().trim().replace(/\s+/g, "-").replace(/[^a-z0-9-]/g, "");
 
   const handleProductSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -174,20 +121,11 @@ export default function AdminPage() {
         }
       }
       const payload = {
-        name: form.name,
-        description: form.description,
-        price: parseFloat(form.price),
-        category: form.category,
-        condition: form.condition,
-        storage: form.storage,
-        ram: form.ram,
-        color: form.color,
-        warranty: form.warranty,
-        in_box: form.in_box,
-        stock: parseInt(form.stock),
-        slug: slugify(form.name),
-        in_stock: form.in_stock,
-        images: imageUrls,
+        name: form.name, description: form.description, price: parseFloat(form.price),
+        category: form.category, condition: form.condition, storage: form.storage,
+        ram: form.ram, color: form.color, warranty: form.warranty, in_box: form.in_box,
+        stock: parseInt(form.stock), slug: slugify(form.name),
+        in_stock: form.in_stock, images: imageUrls,
       };
       if (editingId) {
         const { error } = await supabase.from("products").update(payload).eq("id", editingId);
@@ -207,30 +145,20 @@ export default function AdminPage() {
 
   const resetForm = () => {
     setForm(emptyForm); setSlots(emptySlots()); setEditingId(null); setFormView(false);
-    (Object.keys(fileRefs.current) as SlotKey[]).forEach((k) => {
-      if (fileRefs.current[k]) fileRefs.current[k]!.value = "";
-    });
+    (Object.keys(fileRefs.current) as SlotKey[]).forEach((k) => { if (fileRefs.current[k]) fileRefs.current[k]!.value = ""; });
   };
 
   const handleEdit = (product: Product) => {
     setForm({
-      name: product.name,
-      description: product.description || "",
-      price: String(product.price),
-      category: product.category,
-      condition: product.condition || "New",
-      storage: product.storage || "",
-      ram: product.ram || "",
-      color: product.color || "",
-      warranty: product.warranty || "",
-      in_box: product.in_box || "",
-      stock: String(product.stock ?? 1),
-      in_stock: product.in_stock,
+      name: product.name, description: product.description || "",
+      price: String(product.price), category: product.category,
+      condition: product.condition || "New", storage: product.storage || "",
+      ram: product.ram || "", color: product.color || "",
+      warranty: product.warranty || "", in_box: product.in_box || "",
+      stock: String(product.stock ?? 1), in_stock: product.in_stock,
     });
     const newSlots = emptySlots();
-    IMAGE_SLOTS.forEach((slot, i) => {
-      if (product.images?.[i]) newSlots[slot.key] = { file: null, preview: product.images[i], existingUrl: product.images[i] };
-    });
+    IMAGE_SLOTS.forEach((slot, i) => { if (product.images?.[i]) newSlots[slot.key] = { file: null, preview: product.images[i], existingUrl: product.images[i] }; });
     setSlots(newSlots); setEditingId(product.id); setFormView(true);
     window.scrollTo({ top: 0, behavior: "smooth" });
   };
@@ -248,10 +176,7 @@ export default function AdminPage() {
 
   const handleAddAdmin = async (e: React.FormEvent) => {
     e.preventDefault(); setAdminLoading(true); setAdminError(null); setAdminSuccess(null);
-    const { error } = await supabase.from("admins").insert({
-      email: newAdminEmail.trim().toLowerCase(),
-      created_by: currentEmail,
-    });
+    const { error } = await supabase.from("admins").insert({ email: newAdminEmail.trim().toLowerCase(), created_by: currentEmail });
     if (error) { setAdminError(error.message); }
     else { setAdminSuccess(`${newAdminEmail} is now an admin.`); setNewAdminEmail(""); fetchAdmins(); }
     setAdminLoading(false);
@@ -260,14 +185,10 @@ export default function AdminPage() {
   const handleRemoveAdmin = async (id: string, email: string) => {
     if (email === currentEmail) { alert("You can't remove yourself."); return; }
     if (!confirm(`Remove ${email} as admin?`)) return;
-    await supabase.from("admins").delete().eq("id", id);
-    fetchAdmins();
+    await supabase.from("admins").delete().eq("id", id); fetchAdmins();
   };
 
-  const handleSignOut = async () => {
-    await supabase.auth.signOut();
-    router.push("/");
-  };
+  const handleSignOut = async () => { await supabase.auth.signOut(); router.push("/"); };
 
   if (checking) return (
     <div className="min-h-screen bg-white flex items-center justify-center">
@@ -279,14 +200,11 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#f8f8f8]">
 
-      {/* Sticky top bar */}
+      {/* ── Sticky top bar ── */}
       <div className="bg-white border-b border-neutral-200 sticky top-0 z-20">
         <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
-          <span className="text-[13px] tracking-[0.2em] uppercase text-[#1a1a1a] font-medium">
-            RATELS Admin
-          </span>
+          <span className="text-[13px] tracking-[0.2em] uppercase text-[#1a1a1a] font-medium">RATELS Admin</span>
 
-          {/* Desktop nav */}
           <div className="hidden sm:flex items-center gap-6">
             {(["products", "orders", "admins"] as Tab[]).map((t) => (
               <button key={t} onClick={() => { setTab(t); resetForm(); }}
@@ -294,15 +212,10 @@ export default function AdminPage() {
                 {t}
               </button>
             ))}
-            <a href="/" target="_blank" className="text-[11px] text-[#aaa] hover:text-[#1a1a1a] transition-colors">
-              View Site ↗
-            </a>
-            <button onClick={handleSignOut} className="text-[11px] text-[#aaa] hover:text-[#1a1a1a] transition-colors uppercase">
-              Sign Out
-            </button>
+            <a href="/" target="_blank" className="text-[11px] text-[#aaa] hover:text-[#1a1a1a] transition-colors">View Site ↗</a>
+            <button onClick={handleSignOut} className="text-[11px] text-[#aaa] hover:text-[#1a1a1a] transition-colors uppercase">Sign Out</button>
           </div>
 
-          {/* Mobile hamburger */}
           <button className="sm:hidden p-2 -mr-1 text-[#6b6560]" onClick={() => setMenuOpen(!menuOpen)}>
             <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-6 h-6">
               {menuOpen
@@ -312,7 +225,6 @@ export default function AdminPage() {
           </button>
         </div>
 
-        {/* Mobile dropdown */}
         {menuOpen && (
           <div className="sm:hidden bg-white border-t border-neutral-100 px-4 py-2 flex flex-col">
             {(["products", "orders", "admins"] as Tab[]).map((t) => (
@@ -321,27 +233,22 @@ export default function AdminPage() {
                 {t}
               </button>
             ))}
-            <a href="/" target="_blank" className="text-[14px] text-[#888] py-3.5 border-b border-neutral-50">
-              View Site ↗
-            </a>
-            <button onClick={handleSignOut} className="text-left text-[14px] text-[#888] uppercase py-3.5">
-              Sign Out
-            </button>
+            <a href="/" target="_blank" className="text-[14px] text-[#888] py-3.5 border-b border-neutral-50">View Site ↗</a>
+            <button onClick={handleSignOut} className="text-left text-[14px] text-[#888] uppercase py-3.5 border-b border-neutral-50">Sign Out</button>
+            <p className="text-[11px] text-[#ccc] py-3">{currentEmail}</p>
           </div>
         )}
       </div>
 
       <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
 
-        {/* PRODUCTS TAB */}
+        {/* ── PRODUCTS TAB ── */}
         {tab === "products" && (
           <>
             {formView && (
               <div className="bg-white border border-neutral-200 p-5 sm:p-8 mb-6">
                 <div className="flex items-center justify-between mb-6">
-                  <h2 className="text-[15px] font-medium text-[#1a1a1a]">
-                    {editingId ? "Edit Product" : "New Product"}
-                  </h2>
+                  <h2 className="text-[15px] font-medium text-[#1a1a1a]">{editingId ? "Edit Product" : "New Product"}</h2>
                   <button onClick={resetForm} className="p-2 text-[#aaa] hover:text-[#1a1a1a] transition-colors">
                     <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-5 h-5">
                       <path strokeLinecap="round" strokeLinejoin="round" d="M6 18 18 6M6 6l12 12" />
@@ -353,9 +260,7 @@ export default function AdminPage() {
 
                   {/* Image slots */}
                   <div>
-                    <label className="block text-[11px] tracking-[0.2em] uppercase text-[#8a8580] mb-3">
-                      Product Images
-                    </label>
+                    <label className="block text-[11px] tracking-[0.2em] uppercase text-[#8a8580] mb-3">Product Images</label>
                     <div className="grid grid-cols-3 gap-3">
                       {IMAGE_SLOTS.map((slot) => {
                         const state = slots[slot.key];
@@ -365,7 +270,7 @@ export default function AdminPage() {
                             <span className="text-[10px] tracking-[0.15em] uppercase text-[#aaa]">{slot.label}</span>
                             <div
                               onClick={() => !hasImage && fileRefs.current[slot.key]?.click()}
-                              className="relative border border-dashed border-neutral-300 overflow-hidden bg-[#fafafa] cursor-pointer"
+                              className="relative border border-dashed border-neutral-300 overflow-hidden bg-[#fafafa]"
                               style={{ aspectRatio: "1/1" }}
                             >
                               {hasImage ? (
@@ -376,9 +281,10 @@ export default function AdminPage() {
                                     className="absolute top-1.5 right-1.5 w-7 h-7 bg-black/70 text-white text-[12px] flex items-center justify-center z-10">
                                     ✕
                                   </button>
+                                  <div onClick={() => fileRefs.current[slot.key]?.click()} className="absolute inset-0 cursor-pointer z-0" />
                                 </>
                               ) : (
-                                <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-[#ccc]">
+                                <div className="w-full h-full flex flex-col items-center justify-center gap-2 text-[#ccc] cursor-pointer">
                                   <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1} stroke="currentColor" className="w-6 h-6">
                                     <path strokeLinecap="round" strokeLinejoin="round" d="M12 4.5v15m7.5-7.5h-15" />
                                   </svg>
@@ -471,9 +377,7 @@ export default function AdminPage() {
 
                   {/* In the box */}
                   <div>
-                    <label className="block text-[11px] tracking-[0.2em] uppercase text-[#8a8580] mb-2">
-                      What&apos;s in the Box
-                    </label>
+                    <label className="block text-[11px] tracking-[0.2em] uppercase text-[#8a8580] mb-2">What&apos;s in the Box</label>
                     <input type="text" value={form.in_box} onChange={(e) => setForm({ ...form, in_box: e.target.value })}
                       className="w-full border border-neutral-200 px-4 py-4 text-[16px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors bg-white"
                       placeholder="Phone, Charger, Cable, Manual" />
@@ -513,7 +417,7 @@ export default function AdminPage() {
                   <h2 className="text-[15px] font-medium text-[#1a1a1a]">
                     Products <span className="text-[#aaa] font-normal text-[13px]">({products.length})</span>
                   </h2>
-                  <button onClick={() => { setFormView(true); resetForm(); }}
+                  <button onClick={() => { setFormView(true); resetForm(); setEditingId(null); }}
                     className="bg-[#1a1a1a] text-white px-5 py-3 text-[11px] tracking-[0.15em] uppercase hover:bg-[#333] transition-colors">
                     + Add Product
                   </button>
@@ -573,7 +477,7 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* ORDERS TAB */}
+        {/* ── ORDERS TAB ── */}
         {tab === "orders" && (
           <div>
             <h2 className="text-[15px] font-medium text-[#1a1a1a] mb-5">
@@ -589,18 +493,12 @@ export default function AdminPage() {
                   <div key={order.id} className="bg-white border border-neutral-100 p-4">
                     <div className="flex items-start justify-between gap-4 mb-3">
                       <div>
-                        <p className="text-[13px] text-[#1a1a1a] font-light">
-                          #{order.id.slice(0, 8).toUpperCase()}
-                        </p>
+                        <p className="text-[13px] text-[#1a1a1a] font-light">#{order.id.slice(0, 8).toUpperCase()}</p>
                         <p className="text-[11px] text-[#aaa] mt-0.5">
-                          {new Date(order.created_at).toLocaleDateString("en-NG", {
-                            day: "numeric", month: "short", year: "numeric"
-                          })}
+                          {new Date(order.created_at).toLocaleDateString("en-NG", { day: "numeric", month: "short", year: "numeric" })}
                         </p>
                       </div>
-                      <span className="text-[13px] text-[#1a1a1a]">
-                        ₦{Number(order.total).toLocaleString()}
-                      </span>
+                      <span className="text-[13px] text-[#1a1a1a]">₦{Number(order.total).toLocaleString()}</span>
                     </div>
                     <div className="flex gap-2 flex-wrap">
                       {ORDER_STATUSES.map((s) => (
@@ -621,15 +519,14 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ADMINS TAB */}
+        {/* ── ADMINS TAB ── */}
         {tab === "admins" && (
           <div>
             <h2 className="text-[15px] font-medium text-[#1a1a1a] mb-5">Manage Admins</h2>
             <div className="bg-white border border-neutral-200 p-5 mb-4">
               <p className="text-[11px] tracking-[0.2em] uppercase text-[#8a8580] mb-3">Add New Admin</p>
               <form onSubmit={handleAddAdmin} className="flex flex-col gap-3">
-                <input type="email" inputMode="email" value={newAdminEmail}
-                  onChange={(e) => setNewAdminEmail(e.target.value)}
+                <input type="email" inputMode="email" value={newAdminEmail} onChange={(e) => setNewAdminEmail(e.target.value)}
                   className="w-full border border-neutral-200 px-4 py-4 text-[16px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors"
                   placeholder="email@example.com" required />
                 <button type="submit" disabled={adminLoading}
