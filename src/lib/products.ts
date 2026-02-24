@@ -1,14 +1,6 @@
-// FILE: src/lib/products.ts
-import { createClient } from "@supabase/supabase-js";
+// Dummy data — swap getProductsByCategory with real Supabase query when admin is ready.
 
-function getSupabase() {
-  return createClient(
-    process.env.NEXT_PUBLIC_SUPABASE_URL!,
-    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!
-  );
-}
-
-export interface DBProduct {
+export interface Product {
   id: string;
   name: string;
   description: string | null;
@@ -25,35 +17,58 @@ export interface DBProduct {
   in_stock: boolean;
   stock: number;
   created_at: string;
+  sizes: string[];
 }
 
-export async function getProductsByCategory(category: string): Promise<DBProduct[]> {
-  const supabase = getSupabase();
-  const { data } = await supabase
-    .from("products")
-    .select("*")
-    .eq("category", category)
-    .eq("in_stock", true)
-    .order("created_at", { ascending: false });
-  return data ?? [];
+const ALL_PRODUCTS: Product[] = [
+  {
+    id: "1",
+    name: "iPhone 13 Pro Max",
+    description: "Excellent condition. No scratches, battery health 89%. Original packaging included.",
+    price: 450000,
+    category: "phones",
+    condition: "UK Used",
+    storage: "256GB",
+    ram: "6GB",
+    color: "Sierra Blue",
+    warranty: "3 months",
+    in_box: "Phone, Charger, Cable",
+    images: ["/products/iphone-13-pro.webp"],
+    slug: "iphone-13-pro-max",
+    in_stock: true,
+    stock: 1,
+    created_at: new Date().toISOString(),
+    sizes: [],
+  },
+  {
+    id: "2",
+    name: "MacBook Air M1",
+    description: "Super fast, silent, and lightweight. Battery health 91%. Perfect for students and creatives.",
+    price: 380000,
+    category: "laptops",
+    condition: "UK Used",
+    storage: "256GB",
+    ram: "8GB",
+    color: "Space Grey",
+    warranty: "1 month",
+    in_box: "Laptop, Charger",
+    images: ["/products/macbook-air-m1.webp"],
+    slug: "macbook-air-m1",
+    in_stock: true,
+    stock: 1,
+    created_at: new Date().toISOString(),
+    sizes: [],
+  },
+];
+
+export async function getProductsByCategory(category: string): Promise<Product[]> {
+  return ALL_PRODUCTS.filter((p) => p.category === category && p.in_stock);
 }
 
-export async function getAllProducts(): Promise<DBProduct[]> {
-  const supabase = getSupabase();
-  const { data } = await supabase
-    .from("products")
-    .select("*")
-    .eq("in_stock", true)
-    .order("created_at", { ascending: false });
-  return data ?? [];
+export async function getAllProducts(): Promise<Product[]> {
+  return ALL_PRODUCTS.filter((p) => p.in_stock);
 }
 
-export async function getProductBySlug(slug: string): Promise<DBProduct | null> {
-  const supabase = getSupabase();
-  const { data } = await supabase
-    .from("products")
-    .select("*")
-    .eq("slug", slug)
-    .maybeSingle();
-  return data ?? null;
+export async function getProductBySlug(slug: string): Promise<Product | null> {
+  return ALL_PRODUCTS.find((p) => p.slug === slug) ?? null;
 }

@@ -33,7 +33,7 @@ export default function ScamBanner() {
         transition: "opacity 0.4s ease, transform 0.4s ease",
       }}
     >
-      <div className="bg-[#0a0a0a] text-white px-5 py-4 flex items-start gap-4 shadow-2xl">
+      <div className="bg-red-600 text-white px-5 py-4 flex items-start gap-4 shadow-2xl">
         {/* Icon */}
         <div className="shrink-0 mt-0.5">
           <svg xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" strokeWidth={1.5} stroke="currentColor" className="w-4 h-4 text-white/60">
