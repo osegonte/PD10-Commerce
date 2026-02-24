@@ -1,4 +1,3 @@
-// FILE: src/app/admin/page.tsx
 "use client";
 
 import { useEffect, useState, useRef } from "react";
@@ -97,12 +96,28 @@ export default function AdminPage() {
   const [menuOpen, setMenuOpen] = useState(false);
 
   useEffect(() => {
-    supabase.auth.getSession().then(async ({ data: { session } }) => {
-      if (!session) { router.push("/login"); return; }
-      const email = session.user.email ?? "";
+    supabase.auth.getUser().then(async ({ data: { user }, error }) => {
+      if (error || !user) {
+        router.push("/login");
+        return;
+      }
+
+      const email = user.email ?? "";
       setCurrentEmail(email);
-      const { data } = await supabase.from("admins").select("email").eq("email", email).maybeSingle();
-      if (!data) { router.push("/"); return; }
+
+      const { data, error: adminError } = await supabase
+        .from("admins")
+        .select("email")
+        .eq("email", email)
+        .maybeSingle();
+
+      console.log("Admin check:", { email, data, adminError });
+
+      if (!data) {
+        router.push("/");
+        return;
+      }
+
       setAuthorized(true);
       setChecking(false);
       fetchProducts();
@@ -264,7 +279,7 @@ export default function AdminPage() {
   return (
     <div className="min-h-screen bg-[#f8f8f8]">
 
-      {/* ── Sticky top bar ── */}
+      {/* Sticky top bar */}
       <div className="bg-white border-b border-neutral-200 sticky top-0 z-20">
         <div className="px-4 sm:px-6 h-14 flex items-center justify-between">
           <span className="text-[13px] tracking-[0.2em] uppercase text-[#1a1a1a] font-medium">
@@ -318,7 +333,7 @@ export default function AdminPage() {
 
       <div className="px-4 sm:px-6 py-6 max-w-5xl mx-auto">
 
-        {/* ── PRODUCTS TAB ── */}
+        {/* PRODUCTS TAB */}
         {tab === "products" && (
           <>
             {formView && (
@@ -385,7 +400,7 @@ export default function AdminPage() {
                     <label className="block text-[11px] tracking-[0.2em] uppercase text-[#8a8580] mb-2">Product Name</label>
                     <input type="text" value={form.name} onChange={(e) => setForm({ ...form, name: e.target.value })}
                       className="w-full border border-neutral-200 px-4 py-4 text-[16px] text-[#1a1a1a] outline-none focus:border-[#1a1a1a] transition-colors bg-white"
-                      placeholder="e.g. iPhone 17 Pro Max" required />
+                      placeholder="e.g. iPhone 15 Pro Max" required />
                   </div>
 
                   {/* Price + Stock */}
@@ -454,7 +469,7 @@ export default function AdminPage() {
                     </div>
                   </div>
 
-                  {/* What's in the box */}
+                  {/* In the box */}
                   <div>
                     <label className="block text-[11px] tracking-[0.2em] uppercase text-[#8a8580] mb-2">
                       What&apos;s in the Box
@@ -525,12 +540,8 @@ export default function AdminPage() {
                           <p className="text-[14px] text-[#1a1a1a] font-light truncate">{product.name}</p>
                           <div className="flex items-center gap-2 mt-0.5 flex-wrap">
                             <p className="text-[11px] text-[#aaa] capitalize">{product.category}</p>
-                            {product.condition && (
-                              <span className="text-[10px] text-[#aaa]">· {product.condition}</span>
-                            )}
-                            {product.storage && (
-                              <span className="text-[10px] text-[#aaa]">· {product.storage}</span>
-                            )}
+                            {product.condition && <span className="text-[10px] text-[#aaa]">· {product.condition}</span>}
+                            {product.storage && <span className="text-[10px] text-[#aaa]">· {product.storage}</span>}
                           </div>
                           <div className="flex items-center gap-3 mt-1.5">
                             <span className="text-[13px] text-[#1a1a1a]">₦{Number(product.price).toLocaleString()}</span>
@@ -562,7 +573,7 @@ export default function AdminPage() {
           </>
         )}
 
-        {/* ── ORDERS TAB ── */}
+        {/* ORDERS TAB */}
         {tab === "orders" && (
           <div>
             <h2 className="text-[15px] font-medium text-[#1a1a1a] mb-5">
@@ -591,7 +602,6 @@ export default function AdminPage() {
                         ₦{Number(order.total).toLocaleString()}
                       </span>
                     </div>
-                    {/* Status selector */}
                     <div className="flex gap-2 flex-wrap">
                       {ORDER_STATUSES.map((s) => (
                         <button key={s} onClick={() => handleOrderStatus(order.id, s)}
@@ -611,7 +621,7 @@ export default function AdminPage() {
           </div>
         )}
 
-        {/* ── ADMINS TAB ── */}
+        {/* ADMINS TAB */}
         {tab === "admins" && (
           <div>
             <h2 className="text-[15px] font-medium text-[#1a1a1a] mb-5">Manage Admins</h2>

@@ -1,4 +1,3 @@
-// FILE: src/app/auth/callback/route.ts
 import { NextRequest, NextResponse } from "next/server";
 import { createServerClient } from "@supabase/ssr";
 import { cookies } from "next/headers";
@@ -27,19 +26,10 @@ export async function GET(request: NextRequest) {
       }
     );
 
-    const { data: { session } } = await supabase.auth.exchangeCodeForSession(code);
+    await supabase.auth.exchangeCodeForSession(code);
 
-    if (session?.user?.email) {
-      const { data } = await supabase
-        .from("admins")
-        .select("email")
-        .eq("email", session.user.email)
-        .maybeSingle();
-
-      if (data) {
-        return NextResponse.redirect(new URL("/admin", requestUrl.origin));
-      }
-    }
+    // Just redirect to admin — the admin page handles auth checks
+    return NextResponse.redirect(new URL("/admin", requestUrl.origin));
   }
 
   return NextResponse.redirect(new URL("/", requestUrl.origin));
